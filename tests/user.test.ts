@@ -29,7 +29,7 @@ describe("User API tests", () => {
         })
       );
       expect(response.status).toBe(200);
-      const body = await response.json();
+      const body = (await response.json()) as any;
       expect(body).toEqual({ data: "OK" });
     });
 
@@ -150,7 +150,7 @@ describe("User API tests", () => {
         })
       );
       expect(response.status).toBe(400);
-      const body = await response.json();
+      const body = (await response.json()) as any;
       expect(body.error).toBe("Email sudah terdaftar");
     });
   });
@@ -183,7 +183,7 @@ describe("User API tests", () => {
         })
       );
       expect(response.status).toBe(200);
-      const body = await response.json();
+      const body = (await response.json()) as any;
       expect(body.data).toBeDefined();
       expect(typeof body.data).toBe("string");
     });
@@ -228,7 +228,7 @@ describe("User API tests", () => {
         })
       );
       expect(response.status).toBe(400);
-      const body = await response.json();
+      const body = (await response.json()) as any;
       expect(body.error).toBe("Email atau password salah");
     });
 
@@ -244,7 +244,7 @@ describe("User API tests", () => {
         })
       );
       expect(response.status).toBe(400);
-      const body = await response.json();
+      const body = (await response.json()) as any;
       expect(body.error).toBe("Email atau password salah");
     });
   });
@@ -276,7 +276,7 @@ describe("User API tests", () => {
           }),
         })
       );
-      const loginBody = await loginRes.json();
+      const loginBody = (await loginRes.json()) as any;
       token = loginBody.data;
     });
 
@@ -290,7 +290,7 @@ describe("User API tests", () => {
         })
       );
       expect(response.status).toBe(200);
-      const body = await response.json();
+      const body = (await response.json()) as any;
       expect(body.data.username).toBe("Eko");
       expect(body.data.email).toBe("eko@localhost");
       expect(body.data.created_at).toBeDefined();
@@ -303,7 +303,7 @@ describe("User API tests", () => {
         })
       );
       expect(response.status).toBe(401);
-      const body = await response.json();
+      const body = (await response.json()) as any;
       expect(body).toEqual({ data: "unauthorized" });
     });
 
@@ -359,7 +359,7 @@ describe("User API tests", () => {
           }),
         })
       );
-      const loginBody = await loginRes.json();
+      const loginBody = (await loginRes.json()) as any;
       token = loginBody.data;
     });
 
@@ -373,7 +373,7 @@ describe("User API tests", () => {
         })
       );
       expect(response.status).toBe(200);
-      const body = await response.json();
+      const body = (await response.json()) as any;
       expect(body).toEqual({ data: "Logout success" });
 
       // Verify token cannot be used again
