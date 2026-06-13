@@ -3,6 +3,14 @@ import { users, sessions } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 export class UsersService {
+  /**
+   * Mendaftarkan pengguna baru ke dalam database.
+   * Fungsi ini memvalidasi data input, memastikan email unik, melakukan hashing password dengan bcrypt,
+   * lalu menyimpan data pengguna baru ke tabel `users`.
+   * 
+   * @param data Objek berisi `name`, `email`, dan `password`
+   * @returns "OK" jika berhasil
+   */
   static async registerUser(data: { name: unknown; email: unknown; password: unknown }) {
     if (typeof data.name !== "string" || !data.name.trim()) {
       throw new Error("Name is required");
@@ -43,6 +51,14 @@ export class UsersService {
     return "OK";
   }
 
+  /**
+   * Mengautentikasi pengguna berdasarkan email dan password.
+   * Fungsi ini memverifikasi keberadaan user, mencocokkan password terenkripsi,
+   * kemudian men-generate token UUID sesi baru yang disimpan ke tabel `sessions`.
+   * 
+   * @param data Objek berisi `email` dan `password`
+   * @returns Token UUID sebagai tanda sesi aktif
+   */
   static async loginUser(data: { email: unknown; password: unknown }) {
     if (typeof data.email !== "string" || !data.email.trim()) {
       throw new Error("Email atau password salah");
@@ -87,6 +103,14 @@ export class UsersService {
     return token;
   }
 
+  /**
+   * Mengambil detail profil user yang sedang login berdasarkan token sesi.
+   * Fungsi ini memverifikasi keberadaan token pada tabel `sessions` lalu mengambil
+   * data user terkait dari tabel `users`.
+   * 
+   * @param token Token UUID sesi aktif
+   * @returns Objek profil user berisi id, username, email, dan tanggal dibuat
+   */
   static async getCurrentUser(token: string) {
     const existingSession = await db
       .select()
@@ -126,6 +150,13 @@ export class UsersService {
     };
   }
 
+  /**
+   * Mengakhiri sesi masuk pengguna dengan menghapus token dari database.
+   * Fungsi ini menghapus baris session yang cocok dengan token dari tabel `sessions`.
+   * 
+   * @param token Token UUID sesi aktif yang ingin dinonaktifkan
+   * @returns "OK" jika berhasil logout
+   */
   static async logoutUser(token: string) {
     const result = await db.delete(sessions).where(eq(sessions.token, token));
     if (result[0].affectedRows === 0) {
