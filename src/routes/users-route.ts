@@ -23,6 +23,14 @@ export const usersRoute = new Elysia({ prefix: "/api" })
       email: t.String({ minLength: 3, maxLength: 255 }),
       password: t.String({ minLength: 1, maxLength: 100 }),
     }),
+    response: {
+      200: t.Object({
+        data: t.String()
+      }),
+      400: t.Object({
+        error: t.String()
+      })
+    },
     detail: {
       tags: ["Users"],
       summary: "Registrasi User Baru",
@@ -42,6 +50,14 @@ export const usersRoute = new Elysia({ prefix: "/api" })
       email: t.String({ minLength: 3 }),
       password: t.String({ minLength: 1 }),
     }),
+    response: {
+      200: t.Object({
+        data: t.String()
+      }),
+      400: t.Object({
+        error: t.String()
+      })
+    },
     detail: {
       tags: ["Users"],
       summary: "Login User",
@@ -66,6 +82,22 @@ export const usersRoute = new Elysia({ prefix: "/api" })
       return { data: "internal_server_error" };
     }
   }, {
+    response: {
+      200: t.Object({
+        data: t.Object({
+          id: t.Number(),
+          username: t.String(),
+          email: t.String(),
+          created_at: t.Union([t.Date(), t.String(), t.Null()])
+        })
+      }),
+      401: t.Object({
+        data: t.String()
+      }),
+      500: t.Object({
+        data: t.String()
+      })
+    },
     detail: {
       tags: ["Users"],
       summary: "Get Current Logged-In User",
@@ -91,6 +123,17 @@ export const usersRoute = new Elysia({ prefix: "/api" })
       return { data: "internal_server_error" };
     }
   }, {
+    response: {
+      200: t.Object({
+        data: t.String()
+      }),
+      401: t.Object({
+        data: t.String()
+      }),
+      500: t.Object({
+        data: t.String()
+      })
+    },
     detail: {
       tags: ["Users"],
       summary: "Logout User",
