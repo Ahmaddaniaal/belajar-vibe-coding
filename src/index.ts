@@ -2,8 +2,29 @@ import { Elysia } from "elysia";
 import { db } from "./db/db";
 import { users } from "./db/schema";
 import { usersRoute } from "./routes/users-route";
+import { swagger } from "@elysiajs/swagger";
 
-const app = new Elysia()
+export const app = new Elysia()
+  .use(
+    swagger({
+      documentation: {
+        info: {
+          title: "User Management API",
+          description: "Dokumentasi API untuk registrasi, login, profil, dan logout user.",
+          version: "1.0.0",
+        },
+        components: {
+          securitySchemes: {
+            BearerAuth: {
+              type: "http",
+              scheme: "bearer",
+              bearerFormat: "UUID",
+            },
+          },
+        },
+      },
+    })
+  )
   .get("/", () => "Welcome to Elysia + Drizzle + MySQL API!")
   .get("/users", async () => {
     try {
@@ -13,9 +34,11 @@ const app = new Elysia()
       return { success: false, error: error.message };
     }
   })
-  .use(usersRoute)
-  .listen(process.env.PORT || 3000);
+  .use(usersRoute);
 
-console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
-);
+if (process.env.NODE_ENV !== "test") {
+  app.listen(process.env.PORT || 3000);
+  console.log(
+    `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
+  );
+}

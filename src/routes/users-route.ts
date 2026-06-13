@@ -22,7 +22,12 @@ export const usersRoute = new Elysia({ prefix: "/api" })
       name: t.String({ minLength: 1, maxLength: 255 }),
       email: t.String({ minLength: 3, maxLength: 255 }),
       password: t.String({ minLength: 1, maxLength: 100 }),
-    })
+    }),
+    detail: {
+      tags: ["Users"],
+      summary: "Registrasi User Baru",
+      description: "Mendaftarkan user baru dengan verifikasi keunikan email dan enkripsi password.",
+    }
   })
   .post("/users/login", async ({ body, set }) => {
     try {
@@ -36,7 +41,12 @@ export const usersRoute = new Elysia({ prefix: "/api" })
     body: t.Object({
       email: t.String({ minLength: 3 }),
       password: t.String({ minLength: 1 }),
-    })
+    }),
+    detail: {
+      tags: ["Users"],
+      summary: "Login User",
+      description: "Mengautentikasi user dan mengembalikan token session aktif.",
+    }
   })
   .get("/users/current", async ({ token, set }) => {
     try {
@@ -55,6 +65,13 @@ export const usersRoute = new Elysia({ prefix: "/api" })
       set.status = 500;
       return { data: "internal_server_error" };
     }
+  }, {
+    detail: {
+      tags: ["Users"],
+      summary: "Get Current Logged-In User",
+      description: "Mengambil data profil pengguna yang sedang login berdasarkan token di header Authorization.",
+      security: [{ BearerAuth: [] }],
+    }
   })
   .delete("/users/logout", async ({ token, set }) => {
     try {
@@ -72,6 +89,13 @@ export const usersRoute = new Elysia({ prefix: "/api" })
       }
       set.status = 500;
       return { data: "internal_server_error" };
+    }
+  }, {
+    detail: {
+      tags: ["Users"],
+      summary: "Logout User",
+      description: "Menghapus token sesi aktif pengguna dari database.",
+      security: [{ BearerAuth: [] }],
     }
   });
 
