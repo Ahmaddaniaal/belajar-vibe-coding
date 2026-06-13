@@ -1,5 +1,5 @@
 import { db } from "../db/db";
-import { users } from "../db/schema";
+import { users, sessions } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 export class UsersService {
@@ -42,4 +42,88 @@ export class UsersService {
 
     return "OK";
   }
+
+  static async loginUser(data: { email: unknown; password: unknown }) {
+    if (typeof data.email !== "string" || !data.email.trim()) {
+      throw new Error("Email atau password salah");
+    }
+    if (typeof data.password !== "string" || !data.password.trim()) {
+      throw new Error("Email atau password salah");
+    }
+
+    const emailClean = data.email.trim().toLowerCase();
+
+    // Find user
+    const existingUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, emailClean))
+      .limit(1);
+
+    if (existingUser.length === 0) {
+      throw new Error("Email atau password salah");
+    }
+
+    const user = existingUser[0];
+    if (!user) {
+      throw new Error("Email atau password salah");
+    }
+
+    // Verify password using Bun's built-in verification
+    const isPasswordCorrect = await Bun.password.verify(data.password, user.password);
+    if (!isPasswordCorrect) {
+      throw new Error("Email atau password salah");
+    }
+
+    // Generate token UUID
+    const token = crypto.randomUUID();
+
+    // Insert session record
+    await db.insert(sessions).values({
+      token,
+      userId: user.id,
+    });
+
+    return token;
+  }
+
+  static async getCurrentUser(token: string) {
+    const existingSession = await db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.token, token))
+      .limit(1);
+
+    if (existingSession.length === 0) {
+      throw new Error("Unauthorized");
+    }
+
+    const session = existingSession[0];
+    if (!session) {
+      throw new Error("Unauthorized");
+    }
+
+    const existingUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, session.userId))
+      .limit(1);
+
+    if (existingUser.length === 0) {
+      throw new Error("Unauthorized");
+    }
+
+    const user = existingUser[0];
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    return {
+      id: user.id,
+      username: user.name,
+      email: user.email,
+      created_at: user.createdAt,
+    };
+  }
 }
+
