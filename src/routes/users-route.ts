@@ -2,6 +2,13 @@ import { Elysia, t } from "elysia";
 import { UsersService } from "../services/users-service";
 
 export const usersRoute = new Elysia({ prefix: "/api" })
+  .derive(({ headers }) => {
+    const authorization = headers["authorization"];
+    if (!authorization || !authorization.startsWith("Bearer ")) {
+      return { token: null };
+    }
+    return { token: authorization.substring(7) };
+  })
   .post("/users", async ({ body, set }) => {
     try {
       const result = await UsersService.registerUser(body);
@@ -31,36 +38,40 @@ export const usersRoute = new Elysia({ prefix: "/api" })
       password: t.String({ minLength: 1 }),
     })
   })
-  .get("/users/current", async ({ headers, set }) => {
+  .get("/users/current", async ({ token, set }) => {
     try {
-      const authorization = headers["authorization"];
-      if (!authorization || !authorization.startsWith("Bearer ")) {
+      if (!token) {
         set.status = 401;
         return { data: "unauthorized" };
       }
 
-      const token = authorization.substring(7);
       const user = await UsersService.getCurrentUser(token);
       return { data: user };
     } catch (error: any) {
-      set.status = 401;
-      return { data: "unauthorized" };
+      if (error.message === "Unauthorized") {
+        set.status = 401;
+        return { data: "unauthorized" };
+      }
+      set.status = 500;
+      return { data: "internal_server_error" };
     }
   })
-  .delete("/users/logout", async ({ headers, set }) => {
+  .delete("/users/logout", async ({ token, set }) => {
     try {
-      const authorization = headers["authorization"];
-      if (!authorization || !authorization.startsWith("Bearer ")) {
+      if (!token) {
         set.status = 401;
         return { data: "unauthorized" };
       }
 
-      const token = authorization.substring(7);
       await UsersService.logoutUser(token);
       return { data: "Logout success" };
     } catch (error: any) {
-      set.status = 401;
-      return { data: "unauthorized" };
+      if (error.message === "Unauthorized") {
+        set.status = 401;
+        return { data: "unauthorized" };
+      }
+      set.status = 500;
+      return { data: "internal_server_error" };
     }
   });
 
